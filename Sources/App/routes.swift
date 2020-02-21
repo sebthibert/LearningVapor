@@ -3,8 +3,8 @@ import Vapor
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
     // Basic "It works" example
-    router.get { req in
-        return "Hello my name is Seb 🙋🏽‍♂️ I like cheese 🧀"
+      router.get { req -> Future<View> in
+      return try req.view().render("hello")
     }
     
     // Basic "Hello, world!" example
@@ -58,6 +58,16 @@ public func routes(_ router: Router) throws {
 
     return response.flatMap(to: MovieList.self, { response in
       return try response.content.decode(MovieList.self)
+    })
+  }
+
+  router.get("movie", Int.parameter) { req -> Future<Movie> in
+    let client = try req.make(Client.self)
+    let id = try req.parameters.next(Int.self)
+    let response = client.get("https://api.themoviedb.org/3/movie/\(id)?api_key=f7caebd7ef3ee2bd2ca8ecfc1cb67a2c&language=en-US")
+
+    return response.flatMap(to: Movie.self, { response in
+      return try response.content.decode(Movie.self)
     })
   }
 
